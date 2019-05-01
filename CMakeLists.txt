@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project (OXYGINE)
 
 
@@ -239,6 +239,7 @@ add_definitions(${OX_DEFINITIONS})
 include_directories(${OXYGINE_SRC})
 include_directories(${OXYGINE_INCLUDE_DIRS})
 add_library(oxygine-framework STATIC ${SOURCES})
+set_property(TARGET oxygine-framework PROPERTY CXX_STANDARD 17)
 
 
 set(OXYGINE_LIBRARY_DIRS
