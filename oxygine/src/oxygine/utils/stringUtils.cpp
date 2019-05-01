@@ -1,6 +1,7 @@
 #include "stringUtils.h"
 #include "../core/Object.h"
 #include <algorithm>
+#include <filesystem>
 #include <string.h>
 
 #ifdef OXYGINE_SDL
@@ -15,8 +16,8 @@ namespace oxygine
         {
             char dest[255];
 
-            //normalize("//", dest);
-            //OX_ASSERT(strcmp(dest, "/") == 0);
+            normalize("//", dest);
+            OX_ASSERT(strcmp(dest, "/") == 0);
 
             normalize("ab/cd/../qw", dest);
             OX_ASSERT(strcmp(dest, "ab/qw") == 0);
@@ -24,11 +25,11 @@ namespace oxygine
             OX_ASSERT(strcmp(dest, "ab/qw") == 0);
 
 
-            normalize("rom://abc", dest);
-            OX_ASSERT(strcmp(dest, "rom://abc") == 0);
+            //normalize("rom://abc", dest);
+            //OX_ASSERT(strcmp(dest, "rom://abc") == 0);
 
             normalize("/../", dest);
-            OX_ASSERT(strcmp(dest, "/../") == 0);
+            OX_ASSERT(strcmp(dest, "/") == 0);
 
             normalize("../c\\", dest);
             OX_ASSERT(strcmp(dest, "../c/") == 0);
@@ -51,6 +52,9 @@ namespace oxygine
 
             normalize("..a/b/..\\//..///\\/../c\\\\/", dest);
             OX_ASSERT(strcmp(dest, "../c/") == 0);
+
+            normalize("../../a", dest);
+            OX_ASSERT(strcmp(dest, "../../a") == 0);
 
             return true;
         }
@@ -126,64 +130,10 @@ namespace oxygine
 
         void normalize(const char* src, char* dest)
         {
-            OX_ASSERT(src != dest);
-
-            if (*src == '/' || *src == '\\')
-            {
-                *dest = '/';
-                ++src;
-                ++dest;
-            }
-            char* copy = dest;
-
-            *dest = 0;
-            while (*src)
-            {
-                char c = *src;
-                char last = dest - 1 >= copy ? *(dest - 1) : '/';
-                char last_last = dest - 2 >= copy ? *(dest - 2) : '/';
-
-                if (c == '\\')
-                    c = '/';
-                if (c == ':')
-                {
-                    *dest++ = *src++;
-                    *dest++ = *src++;
-                    *dest++ = *src++;
-                    continue;
-                }
-                if (c == '/' && last == '.' && last_last == '.' && (dest > copy + 2))
-                {
-                    dest -= 3;
-                    while (dest > copy)
-                    {
-                        --dest;
-                        if (*dest == '/')
-                        {
-                            ++dest;
-                            break;
-                        }
-                    }
-
-                    ++src;
-                    continue;
-                }
-                if (last == c && c == '/')
-                {
-                    ++src;
-                    continue;
-                }
-
-                *dest = c;
-
-                //*(dest + 1) = 0;
-                //logs::message(copy);
-
-                ++src;
-                ++dest;
-
-            }
-            *dest = 0;
+            std::filesystem::path srcPath = std::filesystem::u8path(src);
+            std::string destPath = srcPath.lexically_normal().u8string();
+            std::replace(destPath.begin(), destPath.end(), '\\', '/');
+            strcpy(dest, destPath.c_str());
         }
 
         std::string normalize(const std::string& pth)
