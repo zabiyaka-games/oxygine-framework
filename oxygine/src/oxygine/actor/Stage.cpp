@@ -133,8 +133,10 @@ namespace oxygine
         IVideoDriver* driver = IVideoDriver::instance;
         driver->setViewport(viewport);
 
-        if (clearColor)
+        if (clearColor) {
+            driver->setScissorRect(nullptr);
             driver->clear(*clearColor);
+        }
 
         Matrix vp = view * proj;
         STDRenderer::instance->setViewProj(vp);
